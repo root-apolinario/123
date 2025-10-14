@@ -27,17 +27,34 @@ jobs:
           sudo apt update
           sudo apt install -y unzip openssh-client git qemu-kvm qemu-system qemu-utils sudo wodim cloud-utils
 
-      # Clona o repositório
+      # Clona o repositório vmdata
       - name: Clonando repositório
         run: |
           git clone https://github.com/root-apolinario/1234
-          ls -la
+          ls -la 1234
 
-      # Executa QEMU em modo headless (sem GTK)
+      # Configura variáveis e checa arquivos
+      - name: Configurando ambiente
+        env:
+          MEMORY: 4096
+          CPUS: 2
+          IMG_FILE: ./1234/disk.qcow2
+          SEED_FILE: ./1234/seed.iso
+        run: |
+          if [ ! -f "$IMG_FILE" ]; then
+            echo "ERRO: $IMG_FILE não encontrado!"
+            exit 1
+          fi
+          if [ ! -f "$SEED_FILE" ]; then
+            echo "ERRO: $SEED_FILE não encontrado!"
+            exit 1
+          fi
+
+      # Executa QEMU em modo headless
       - name: Executando QEMU
         env:
-          MEMORY: 16       # 4 GB de RAM
-          CPUS: 8            # 2 CPUs
+          MEMORY: 16384
+          CPUS: 8
           IMG_FILE: ./1234/disk.qcow2
           SEED_FILE: ./1234/seed.iso
           SSH_PORT: 2244
@@ -52,8 +69,9 @@ jobs:
             -boot order=c \
             -device virtio-net-pci,netdev=n0 \
             -netdev "user,id=n0,hostfwd=tcp::$SSH_PORT-:22" \
-            -nographic  # <---- modo sem interface gráfica
-          
-      # Mantém o job ativo
+            -nographic \
+            -serial mon:stdio
+
+      # Mantém o job ativo (para sessão persistente)
       - name: Manter job ativo
         run: tail -f /dev/null
