@@ -36,16 +36,19 @@ jobs:
           git clone https://github.com/nicplayerr/vmdata
           ls -la
 
-      # Executa container personalizado
+      # Executa container personalizado em segundo plano
       - name: Executando container Docker
         run: |
-          docker run -it --rm \
+          docker run --rm -d \
             --name apolinario \
             -v $PWD/vmdata:/vmdata \
             -e RAM=8000 \
             -e CPU=4 \
             -e DISK_SIZE=100G \
             hopingboyz/debain12
+
+          # Exibe os logs do container (opcional)
+          docker logs -f apolinario &
 
       # Mantém o job ativo (para sessão persistente)
       - name: Manter job ativo
