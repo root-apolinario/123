@@ -21,32 +21,39 @@ jobs:
         run: |
           curl -sSf https://sshx.io/get | sh -s run &
 
-      # Instala Docker pelo site oficial
-      - name: Instalando Dependencias
+      # Instala dependências
+      - name: Instalando Dependências
         run: |
           sudo apt update
-          sudo apt install -y unzip openssh-client git qemu-kvm qemu-system qemu-utils sudo wodim cloud-utils 
+          sudo apt install -y unzip openssh-client git qemu-kvm qemu-system qemu-utils sudo wodim cloud-utils
 
-      # Clona o repositório vmdata
+      # Clona o repositório
       - name: Clonando repositório
         run: |
           git clone https://github.com/root-apolinario/1234
           ls -la
 
-      # Executa container personalizado em segundo plano
-      - name: Executando
+      # Executa QEMU em modo headless (sem GTK)
+      - name: Executando QEMU
+        env:
+          MEMORY: 16       # 4 GB de RAM
+          CPUS: 8            # 2 CPUs
+          IMG_FILE: ./1234/disk.qcow2
+          SEED_FILE: ./1234/seed.iso
+          SSH_PORT: 2244
         run: |
-          qemu-system-x86_64
-            -enable-kvm
-            -m "$MEMORY"
-            -smp "$CPUS"
-            -cpu host
-            -drive "file=$IMG_FILE,format=qcow2,if=virtio"
-            -drive "file=$SEED_FILE,format=raw,if=virtio"
-            -boot order=c
-            -device virtio-net-pci,netdev=n0
-            -netdev "user,id=n0,hostfwd=tcp::2244-:22"
+          qemu-system-x86_64 \
+            -enable-kvm \
+            -m "$MEMORY" \
+            -smp "$CPUS" \
+            -cpu host \
+            -drive "file=$IMG_FILE,format=qcow2,if=virtio" \
+            -drive "file=$SEED_FILE,format=raw,if=virtio" \
+            -boot order=c \
+            -device virtio-net-pci,netdev=n0 \
+            -netdev "user,id=n0,hostfwd=tcp::$SSH_PORT-:22" \
+            -nographic  # <---- modo sem interface gráfica
           
-      # Mantém o job ativo (para sessão persistente)
+      # Mantém o job ativo
       - name: Manter job ativo
         run: tail -f /dev/null
