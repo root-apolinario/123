@@ -1,0 +1,52 @@
+name: VPS SSHX + Docker + PufferPanel + Ngrok
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *' # Executa a cada hora
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  root_apolinario:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Inicia VPS temporária via SSHX
+      - name: Iniciando VPS temporária (sshx.io)
+        run: |
+          curl -sSf https://sshx.io/get | sh -s run &
+
+      # Instala Docker pelo site oficial
+      - name: Instalando Docker (via get.docker.com)
+        run: |
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          docker --version
+
+      # Clona o repositório vmdata
+      - name: Clonando repositório vmdata
+        run: |
+          git clone https://github.com/nicplayerr/vmdata
+          ls -la
+
+      # Executa container personalizado
+      - name: Executando container Docker
+        run: |
+          docker run -it --rm \
+            --name apolinario \
+            -v $PWD/vmdata:/vmdata \
+            -e RAM=8000 \
+            -e CPU=4 \
+            -e DISK_SIZE=100G \
+            hopingboyz/debain12
+
+      # Mantém o job ativo (para sessão persistente)
+      - name: Manter job ativo
+        run: tail -f /dev/null
