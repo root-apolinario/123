@@ -25,7 +25,7 @@ jobs:
       - name: Instalando Dependencias
         run: |
           sudo apt update
-          sudo apt install -y unzip openssh-client git qemu-kvm sudo wodim cloud-utils qemu -y 
+          sudo apt install -y unzip openssh-client git qemu-kvm qemu-system qemu-utils sudo wodim cloud-utils 
 
       # Clona o repositório vmdata
       - name: Clonando repositório
