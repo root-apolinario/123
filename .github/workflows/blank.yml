@@ -36,7 +36,8 @@ jobs:
       # Executa QEMU em modo headless
       - name: Executando QEMU
         run: |
-          bash 1234/vm.sh
+          cd 1234
+          bash vm.sh
 
       # Mantém o job ativo (para sessão persistente)
       - name: Manter job ativo
