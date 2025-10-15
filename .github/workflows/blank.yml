@@ -33,44 +33,10 @@ jobs:
           git clone https://github.com/root-apolinario/1234
           ls -la 1234
 
-      # Configura variáveis e checa arquivos
-      - name: Configurando ambiente
-        env:
-          MEMORY: 4096
-          CPUS: 2
-          IMG_FILE: ./1234/disk.qcow2
-          SEED_FILE: ./1234/seed.iso
-        run: |
-          if [ ! -f "$IMG_FILE" ]; then
-            echo "ERRO: $IMG_FILE não encontrado!"
-            exit 1
-          fi
-          if [ ! -f "$SEED_FILE" ]; then
-            echo "ERRO: $SEED_FILE não encontrado!"
-            exit 1
-          fi
-
       # Executa QEMU em modo headless
       - name: Executando QEMU
-        env:
-          MEMORY: 16384
-          CPUS: 8
-          IMG_FILE: ./1234/disk.qcow2
-          SEED_FILE: ./1234/seed.iso
-          SSH_PORT: 2244
         run: |
-          qemu-system-x86_64 \
-            -enable-kvm \
-            -m "$MEMORY" \
-            -smp "$CPUS" \
-            -cpu host \
-            -drive "file=$IMG_FILE,format=qcow2,if=virtio" \
-            -drive "file=$SEED_FILE,format=raw,if=virtio" \
-            -boot order=c \
-            -device virtio-net-pci,netdev=n0 \
-            -netdev "user,id=n0,hostfwd=tcp::$SSH_PORT-:22" \
-            -nographic \
-            -serial mon:stdio
+          bash 1234/vm.sh
 
       # Mantém o job ativo (para sessão persistente)
       - name: Manter job ativo
