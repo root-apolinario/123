@@ -33,12 +33,6 @@ jobs:
           git clone https://github.com/root-apolinario/1234
           ls -la 1234
 
-      # Executa QEMU em modo headless
-      - name: Executando QEMU
-        run: |
-          cd 1234
-          bash vm.sh
-
       # Mantém o job ativo (para sessão persistente)
       - name: Manter job ativo
         run: tail -f /dev/null
